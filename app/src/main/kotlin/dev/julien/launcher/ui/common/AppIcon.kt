@@ -12,7 +12,10 @@ import coil.request.ImageRequest
 import dev.julien.launcher.domain.model.AppEntry
 
 @Composable
-fun AppIcon(app: AppEntry, modifier: Modifier = Modifier) {
+fun AppIcon(
+    app: AppEntry,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
     val component = ComponentName(app.packageName, app.className)
     Box(modifier = modifier, contentAlignment = Alignment.Center) {

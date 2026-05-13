@@ -11,10 +11,11 @@ import org.junit.runner.RunWith
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class MainActivitySmokeTest {
+    @get:Rule(order = 0)
+    val hilt = HiltAndroidRule(this)
 
-    @get:Rule(order = 0) val hilt = HiltAndroidRule(this)
-
-    @get:Rule(order = 1) val compose = createAndroidComposeRule<MainActivity>()
+    @get:Rule(order = 1)
+    val compose = createAndroidComposeRule<MainActivity>()
 
     @Test fun launcher_starts() {
         // The activity composes its root tree; if Hilt failed to inject the AppWidgetHost

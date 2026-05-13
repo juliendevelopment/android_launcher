@@ -78,51 +78,54 @@ fun HomeScreen(
     // Once a drag session is active (started by a child long-press, or by the drawer
     // before it dismissed), this pointer input tracks moves and finalises the drop.
     Box(
-        modifier = modifier.pointerInput(dragSession.isActive) {
-            if (!dragSession.isActive) return@pointerInput
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent()
-                    val pointer = event.changes.firstOrNull() ?: continue
-                    dragSession.position = pointer.position
-                    dragSession.hovered = when {
-                        removeZoneBounds.contains(pointer.position) -> HoverTarget.RemoveZone
-                        uninstallZoneBounds.contains(pointer.position) -> HoverTarget.UninstallZone
-                        else -> cellAt(pointer.position)?.let { HoverTarget.Cell(it.x, it.y) }
-                    }
-                    if (!pointer.pressed) {
-                        val pos = pointer.position
-                        when {
-                            removeZoneBounds.contains(pos) -> {
-                                (dragSession.payload as? DragPayload.FromGrid)?.let { viewModel.remove(it.item.id) }
+        modifier =
+            modifier.pointerInput(dragSession.isActive) {
+                if (!dragSession.isActive) return@pointerInput
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val pointer = event.changes.firstOrNull() ?: continue
+                        dragSession.position = pointer.position
+                        dragSession.hovered =
+                            when {
+                                removeZoneBounds.contains(pointer.position) -> HoverTarget.RemoveZone
+                                uninstallZoneBounds.contains(pointer.position) -> HoverTarget.UninstallZone
+                                else -> cellAt(pointer.position)?.let { HoverTarget.Cell(it.x, it.y) }
                             }
-                            uninstallZoneBounds.contains(pos) -> {
-                                val grid = dragSession.payload as? DragPayload.FromGrid
-                                val app = (grid?.item as? GridItem.AppShortcut)?.app
-                                if (app != null) {
-                                    val intent = Intent(Intent.ACTION_DELETE, Uri.fromParts("package", app.packageName, null))
-                                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    runCatching { context.startActivity(intent) }
-                                    viewModel.remove(grid.item.id)
+                        if (!pointer.pressed) {
+                            val pos = pointer.position
+                            when {
+                                removeZoneBounds.contains(pos) -> {
+                                    (dragSession.payload as? DragPayload.FromGrid)?.let { viewModel.remove(it.item.id) }
                                 }
-                            }
-                            else -> {
-                                val target = cellAt(pos)
-                                if (target != null) {
-                                    when (val p = dragSession.payload) {
-                                        is DragPayload.FromDrawer -> viewModel.dropAppOnCell(p.app, target)
-                                        is DragPayload.FromGrid -> viewModel.moveItem(p.item.id, target)
-                                        null -> Unit
+                                uninstallZoneBounds.contains(pos) -> {
+                                    val grid = dragSession.payload as? DragPayload.FromGrid
+                                    val app = (grid?.item as? GridItem.AppShortcut)?.app
+                                    if (app != null) {
+                                        val intent =
+                                            Intent(Intent.ACTION_DELETE, Uri.fromParts("package", app.packageName, null))
+                                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                        runCatching { context.startActivity(intent) }
+                                        viewModel.remove(grid.item.id)
+                                    }
+                                }
+                                else -> {
+                                    val target = cellAt(pos)
+                                    if (target != null) {
+                                        when (val p = dragSession.payload) {
+                                            is DragPayload.FromDrawer -> viewModel.dropAppOnCell(p.app, target)
+                                            is DragPayload.FromGrid -> viewModel.moveItem(p.item.id, target)
+                                            null -> Unit
+                                        }
                                     }
                                 }
                             }
+                            dragSession.end()
+                            return@awaitPointerEventScope
                         }
-                        dragSession.end()
-                        return@awaitPointerEventScope
                     }
                 }
-            }
-        },
+            },
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp, vertical = 12.dp)) {
             DropStrip(
@@ -133,10 +136,11 @@ fun HomeScreen(
             )
 
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .onGloballyPositioned { gridBounds = it.boundsInRoot() },
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .onGloballyPositioned { gridBounds = it.boundsInRoot() },
             ) {
                 if (gridBounds != Rect.Zero) {
                     with(density) {
@@ -145,13 +149,13 @@ fun HomeScreen(
 
                         layout.items.forEach { item ->
                             Box(
-                                modifier = Modifier
-                                    .padding(
-                                        start = cellWDp * item.coords.x,
-                                        top = cellHDp * item.coords.y,
-                                    )
-                                    .width(cellWDp * item.span.width)
-                                    .height(cellHDp * item.span.height),
+                                modifier =
+                                    Modifier
+                                        .padding(
+                                            start = cellWDp * item.coords.x,
+                                            top = cellHDp * item.coords.y,
+                                        ).width(cellWDp * item.span.width)
+                                        .height(cellHDp * item.span.height),
                             ) {
                                 GridItemCell(
                                     item = item,
@@ -183,13 +187,19 @@ fun HomeScreen(
         // Hidden double-tap zones to open drawer/shade without a swipe (used by tests).
         Box(modifier = Modifier.fillMaxSize()) {
             Box(
-                Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(24.dp)
+                Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(24.dp)
                     .pointerInput("drawer-handle") {
                         detectTapGestures(onDoubleTap = { onOpenDrawer() })
                     },
             )
             Box(
-                Modifier.align(Alignment.TopCenter).fillMaxWidth().height(24.dp)
+                Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth()
+                    .height(24.dp)
                     .pointerInput("shade-handle") {
                         detectTapGestures(onDoubleTap = { onOpenShade() })
                     },
@@ -208,36 +218,44 @@ fun HomeScreen(
 }
 
 @Composable
-private fun GridItemCell(item: GridItem, onTap: () -> Unit, onLongPress: (Offset) -> Unit) {
+private fun GridItemCell(
+    item: GridItem,
+    onTap: () -> Unit,
+    onLongPress: (Offset) -> Unit,
+) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(item.id) {
-                detectTapGestures(
-                    onTap = { onTap() },
-                    onLongPress = { offset -> onLongPress(offset) },
-                )
-            },
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .pointerInput(item.id) {
+                    detectTapGestures(
+                        onTap = { onTap() },
+                        onLongPress = { offset -> onLongPress(offset) },
+                    )
+                },
         contentAlignment = Alignment.Center,
     ) {
         when (item) {
-            is GridItem.AppShortcut -> Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                AppIcon(app = item.app, modifier = Modifier.size(48.dp))
-                Text(
-                    text = item.app.label,
-                    color = Color.White,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-            }
-            is GridItem.Folder -> Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0x66FFFFFF))
-                    .padding(8.dp),
-                contentAlignment = Alignment.Center,
-            ) { Text(item.label, color = Color.White) }
+            is GridItem.AppShortcut ->
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    AppIcon(app = item.app, modifier = Modifier.size(48.dp))
+                    Text(
+                        text = item.app.label,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+            is GridItem.Folder ->
+                Box(
+                    modifier =
+                        Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Color(0x66FFFFFF))
+                            .padding(8.dp),
+                    contentAlignment = Alignment.Center,
+                ) { Text(item.label, color = Color.White) }
             is GridItem.Widget -> WidgetCell(item = item, modifier = Modifier.fillMaxSize())
         }
     }
@@ -252,24 +270,30 @@ private fun DropStrip(
 ) {
     val target = if (visible) 56.dp else 0.dp
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(target)
-            .padding(4.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (active) Color(0xCCFF5252) else Color(0x33FFFFFF))
-            .onGloballyPositioned { onPositioned(it.boundsInRoot()) },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(target)
+                .padding(4.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(if (active) Color(0xCCFF5252) else Color(0x33FFFFFF))
+                .onGloballyPositioned { onPositioned(it.boundsInRoot()) },
         contentAlignment = Alignment.Center,
     ) {
         if (visible) Text(label, color = Color.White)
     }
 }
 
-private fun launchApp(context: android.content.Context, packageName: String, className: String) {
-    val intent = context.packageManager.getLaunchIntentForPackage(packageName)
-        ?: Intent(Intent.ACTION_MAIN)
-            .addCategory(Intent.CATEGORY_LAUNCHER)
-            .setComponent(ComponentName(packageName, className))
+private fun launchApp(
+    context: android.content.Context,
+    packageName: String,
+    className: String,
+) {
+    val intent =
+        context.packageManager.getLaunchIntentForPackage(packageName)
+            ?: Intent(Intent.ACTION_MAIN)
+                .addCategory(Intent.CATEGORY_LAUNCHER)
+                .setComponent(ComponentName(packageName, className))
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     runCatching { context.startActivity(intent) }
 }

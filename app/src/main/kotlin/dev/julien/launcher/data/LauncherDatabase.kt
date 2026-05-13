@@ -28,5 +28,6 @@ abstract class LauncherDatabase : RoomDatabase() {
 
 class GridConverters {
     @TypeConverter fun gridItemTypeToString(value: GridItemType): String = value.name
+
     @TypeConverter fun stringToGridItemType(value: String): GridItemType = GridItemType.valueOf(value)
 }

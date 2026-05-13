@@ -10,7 +10,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class LauncherNotificationListener : NotificationListenerService() {
-
     @Inject lateinit var repository: NotificationRepository
 
     override fun onListenerConnected() {
@@ -19,9 +18,13 @@ class LauncherNotificationListener : NotificationListenerService() {
         refresh()
     }
 
-    override fun onNotificationPosted(sbn: StatusBarNotification?) { refresh() }
+    override fun onNotificationPosted(sbn: StatusBarNotification?) {
+        refresh()
+    }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) { refresh() }
+    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
+        refresh()
+    }
 
     private fun refresh() {
         val current = runCatching { activeNotifications.orEmpty() }.getOrDefault(emptyArray())

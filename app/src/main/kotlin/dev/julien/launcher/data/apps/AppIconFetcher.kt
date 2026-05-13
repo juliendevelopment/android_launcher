@@ -22,12 +22,12 @@ class AppIconFetcher(
     private val data: ComponentName,
     private val context: Context,
 ) : Fetcher {
-
     override suspend fun fetch(): FetchResult {
         val pm = context.packageManager
-        val drawable: Drawable = runCatching { pm.getActivityIcon(data) }
-            .recoverCatching { pm.getApplicationIcon(data.packageName) }
-            .getOrElse { pm.defaultActivityIcon }
+        val drawable: Drawable =
+            runCatching { pm.getActivityIcon(data) }
+                .recoverCatching { pm.getApplicationIcon(data.packageName) }
+                .getOrElse { pm.defaultActivityIcon }
         return DrawableResult(
             drawable = drawable.toBitmapDrawable(context),
             isSampled = false,
@@ -35,9 +35,14 @@ class AppIconFetcher(
         )
     }
 
-    class Factory(private val context: Context) : Fetcher.Factory<ComponentName> {
-        override fun create(data: ComponentName, options: Options, imageLoader: ImageLoader): Fetcher =
-            AppIconFetcher(data, context)
+    class Factory(
+        private val context: Context,
+    ) : Fetcher.Factory<ComponentName> {
+        override fun create(
+            data: ComponentName,
+            options: Options,
+            imageLoader: ImageLoader,
+        ): Fetcher = AppIconFetcher(data, context)
     }
 }
 
@@ -51,4 +56,3 @@ private fun Drawable.toBitmapDrawable(context: Context): BitmapDrawable {
     draw(canvas)
     return BitmapDrawable(context.resources, bitmap)
 }
-

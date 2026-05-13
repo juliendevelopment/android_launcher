@@ -13,7 +13,6 @@ import javax.inject.Inject
 class LauncherApplication :
     Application(),
     ImageLoaderFactory {
-
     @Inject lateinit var appWidgetHost: AppWidgetHost
 
     @Inject lateinit var imageLoaderFactory: LauncherImageLoaderFactory

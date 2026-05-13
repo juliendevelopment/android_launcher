@@ -18,6 +18,7 @@ import dev.julien.launcher.domain.model.GridItem
 @InstallIn(SingletonComponent::class)
 interface WidgetCellEntryPoint {
     fun appWidgetHost(): AppWidgetHost
+
     fun appWidgetManager(): AppWidgetManager
 }
 
@@ -26,14 +27,18 @@ interface WidgetCellEntryPoint {
  * View-system [AppWidgetHostView]. This is the documented interop boundary.
  */
 @Composable
-fun WidgetCell(item: GridItem.Widget, modifier: Modifier = Modifier) {
+fun WidgetCell(
+    item: GridItem.Widget,
+    modifier: Modifier = Modifier,
+) {
     val context = LocalContext.current
-    val entryPoint = remember(context) {
-        EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            WidgetCellEntryPoint::class.java,
-        )
-    }
+    val entryPoint =
+        remember(context) {
+            EntryPointAccessors.fromApplication(
+                context.applicationContext,
+                WidgetCellEntryPoint::class.java,
+            )
+        }
 
     Box(modifier = modifier) {
         AndroidView(

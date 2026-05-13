@@ -45,36 +45,40 @@ fun DrawerScreen(
     val context = LocalContext.current
     val dragSession = LocalDragSession.current
 
-    val launch: (AppEntry) -> Unit = remember(context, onDismiss) {
-        { app ->
-            val intent = context.packageManager.getLaunchIntentForPackage(app.packageName)
-                ?: android.content.Intent(android.content.Intent.ACTION_MAIN).apply {
-                    addCategory(android.content.Intent.CATEGORY_LAUNCHER)
-                    setComponent(android.content.ComponentName(app.packageName, app.className))
-                }
-            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-            runCatching { context.startActivity(intent) }
-            onDismiss()
+    val launch: (AppEntry) -> Unit =
+        remember(context, onDismiss) {
+            { app ->
+                val intent =
+                    context.packageManager.getLaunchIntentForPackage(app.packageName)
+                        ?: android.content.Intent(android.content.Intent.ACTION_MAIN).apply {
+                            addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                            setComponent(android.content.ComponentName(app.packageName, app.className))
+                        }
+                intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                runCatching { context.startActivity(intent) }
+                onDismiss()
+            }
         }
-    }
 
     Surface(
         modifier = modifier.semantics { contentDescription = "drawer" },
         color = Color(0xE60D0D10),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp, vertical = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = 16.dp),
         ) {
             OutlinedTextField(
                 value = state.query,
                 onValueChange = viewModel::setQuery,
                 singleLine = true,
                 placeholder = { Text(stringResource(R.string.drawer_search_hint)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
             )
 
             LazyVerticalGrid(
@@ -86,19 +90,19 @@ fun DrawerScreen(
                 items(items = state.apps, key = { it.componentFlattened }) { app ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .pointerInput(app.componentFlattened) {
-                                detectTapGestures(
-                                    onTap = { launch(app) },
-                                    onLongPress = { offset ->
-                                        dragSession.begin(DragPayload.FromDrawer(app), offset)
-                                        onDismiss()
-                                    },
-                                )
-                            }
-                            .padding(8.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .pointerInput(app.componentFlattened) {
+                                    detectTapGestures(
+                                        onTap = { launch(app) },
+                                        onLongPress = { offset ->
+                                            dragSession.begin(DragPayload.FromDrawer(app), offset)
+                                            onDismiss()
+                                        },
+                                    )
+                                }.padding(8.dp),
                     ) {
                         AppIcon(app = app, modifier = Modifier.size(56.dp))
                         Text(

@@ -49,9 +49,10 @@ fun NotificationShade(
         color = Color(0xF00D0D10),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp, vertical = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = 16.dp),
         ) {
             Text(
                 "Notifications",
@@ -93,11 +94,12 @@ fun NotificationShade(
 
             // Tap below to dismiss.
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
-                    .clickable(onClick = onDismiss)
-                    .padding(8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp)
+                        .clickable(onClick = onDismiss)
+                        .padding(8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 Text("Close", color = Color.LightGray)
@@ -107,12 +109,17 @@ fun NotificationShade(
 }
 
 @Composable
-private fun NotificationRow(n: ActiveNotification, onTap: () -> Unit, onSwipe: () -> Unit) {
+private fun NotificationRow(
+    n: ActiveNotification,
+    onTap: () -> Unit,
+    onSwipe: () -> Unit,
+) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = onTap),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onTap),
         color = Color(0x33FFFFFF),
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -143,13 +150,17 @@ private fun NotificationRow(n: ActiveNotification, onTap: () -> Unit, onSwipe: (
 }
 
 @Composable
-private fun AccessPrompt(onOpenSettings: () -> Unit, onDismiss: () -> Unit) {
+private fun AccessPrompt(
+    onOpenSettings: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     Surface(
         color = Color(0x33FFFFFF),
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .padding(top = 8.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .padding(top = 8.dp),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(stringResource(R.string.notifications_grant_title), color = Color.White, fontWeight = FontWeight.SemiBold)
@@ -164,12 +175,16 @@ private fun AccessPrompt(onOpenSettings: () -> Unit, onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun Row(onOpenSettings: () -> Unit, onDismiss: () -> Unit) {
+private fun Row(
+    onOpenSettings: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     androidx.compose.foundation.layout.Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Transparent)
-            .padding(top = 4.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .background(Color.Transparent)
+                .padding(top = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Button(onClick = onOpenSettings) {

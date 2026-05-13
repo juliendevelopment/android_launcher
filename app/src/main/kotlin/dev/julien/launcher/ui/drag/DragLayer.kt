@@ -33,33 +33,36 @@ fun DragLayer(modifier: Modifier = Modifier) {
         contentAlignment = Alignment.TopStart,
     ) {
         Box(
-            modifier = Modifier
-                .layout { measurable, constraints ->
-                    val placeable = measurable.measure(constraints)
-                    layout(placeable.width, placeable.height) {
-                        val xPx = (session.position.x - placeable.width / 2f).roundToInt()
-                        val yPx = (session.position.y - placeable.height / 2f).roundToInt()
-                        placeable.place(IntOffset(xPx, yPx))
-                    }
-                }
-                .alpha(0.85f)
-                .shadow(8.dp, RoundedCornerShape(16.dp))
-                .clip(RoundedCornerShape(16.dp))
-                .size(72.dp),
+            modifier =
+                Modifier
+                    .layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        layout(placeable.width, placeable.height) {
+                            val xPx = (session.position.x - placeable.width / 2f).roundToInt()
+                            val yPx = (session.position.y - placeable.height / 2f).roundToInt()
+                            placeable.place(IntOffset(xPx, yPx))
+                        }
+                    }.alpha(0.85f)
+                    .shadow(8.dp, RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp))
+                    .size(72.dp),
         ) {
             when (val p = payload) {
                 is DragPayload.FromDrawer -> AppIcon(app = p.app, modifier = Modifier.size(72.dp))
-                is DragPayload.FromGrid -> when (val item = p.item) {
-                    is GridItem.AppShortcut -> AppIcon(app = item.app, modifier = Modifier.size(72.dp))
-                    is GridItem.Folder -> Box(
-                        modifier = Modifier.size(72.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { Text(item.label.take(2), color = Color.White) }
-                    is GridItem.Widget -> Box(
-                        modifier = Modifier.size(72.dp),
-                        contentAlignment = Alignment.Center,
-                    ) { Text("[widget]", color = Color.White) }
-                }
+                is DragPayload.FromGrid ->
+                    when (val item = p.item) {
+                        is GridItem.AppShortcut -> AppIcon(app = item.app, modifier = Modifier.size(72.dp))
+                        is GridItem.Folder ->
+                            Box(
+                                modifier = Modifier.size(72.dp),
+                                contentAlignment = Alignment.Center,
+                            ) { Text(item.label.take(2), color = Color.White) }
+                        is GridItem.Widget ->
+                            Box(
+                                modifier = Modifier.size(72.dp),
+                                contentAlignment = Alignment.Center,
+                            ) { Text("[widget]", color = Color.White) }
+                    }
             }
         }
     }
