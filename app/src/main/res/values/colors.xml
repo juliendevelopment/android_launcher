@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="scrim">#80000000</color>
+    <color name="drawer_background">#E60D0D10</color>
+    <color name="notification_background">#F00D0D10</color>
+</resources>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Launcher</string>
+    <string name="notification_listener_label">Launcher notification access</string>
+    <string name="drawer_search_hint">Search apps</string>
+    <string name="drawer_open">Open app drawer</string>
+    <string name="drawer_close">Close app drawer</string>
+    <string name="notifications_open">Open notifications</string>
+    <string name="notifications_empty">No notifications</string>
+    <string name="notifications_grant_title">Notification access required</string>
+    <string name="notifications_grant_message">Enable notification access in system settings so the launcher can show your alerts.</string>
+    <string name="notifications_grant_open_settings">Open settings</string>
+    <string name="notifications_grant_dismiss">Not now</string>
+    <string name="grid_remove_zone">Remove</string>
+    <string name="grid_uninstall_zone">Uninstall</string>
+    <string name="widget_picker_title">Choose a widget</string>
+    <string name="widget_picker_add">Add widget</string>
+    <string name="folder_default_label">Folder</string>
+</resources>
