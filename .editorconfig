@@ -16,3 +16,10 @@ trim_trailing_whitespace = false
 
 [Makefile]
 indent_style = tab
+
+# ktlint rule configuration. Picked up by both the ktlint CLI and by Spotless's
+# ktlint integration, so local and CI runs always agree.
+[*.{kt,kts}]
+ktlint_standard_no-wildcard-imports = disabled
+ktlint_standard_function-naming = disabled
+ktlint_standard_property-naming = disabled
