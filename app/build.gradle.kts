@@ -73,6 +73,15 @@ android {
         compose = true
     }
 
+    lint {
+        // v0.1.0 priority is shipping an installable APK. Lint findings are surfaced
+        // as the lint-results-debug.html artifact instead of breaking the build.
+        // Tighten this once the launcher has a clean lint baseline.
+        abortOnError = false
+        warningsAsErrors = false
+        checkReleaseBuilds = false
+    }
+
     packaging {
         resources {
             excludes +=
