@@ -35,32 +35,62 @@ jobs:
       # - name: Spotless check
       #   run: ./gradlew spotlessCheck --stacktrace --no-daemon
 
-      - name: Android lint
-        run: ./gradlew :app:lintDebug --stacktrace --no-daemon
+      - name: Compile debug Kotlin (verbose)
+        run: |
+          set -o pipefail
+          ./gradlew :app:compileDebugKotlin --stacktrace --info --no-daemon 2>&1 | tee build-compile.log
 
-      - name: Upload lint report
+      - name: Upload compile log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-compile-log
+          path: build-compile.log
+          if-no-files-found: ignore
+
+      - name: Android lint
+        run: |
+          set -o pipefail
+          ./gradlew :app:lintDebug --stacktrace --info --no-daemon 2>&1 | tee build-lint.log
+
+      - name: Upload lint artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: lint-report
           path: |
+            build-lint.log
             app/build/reports/lint-results-debug.html
             app/build/reports/lint-results-debug.xml
           if-no-files-found: ignore
 
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace --no-daemon
+        run: |
+          set -o pipefail
+          ./gradlew :app:testDebugUnitTest --stacktrace --info --no-daemon 2>&1 | tee build-test.log
 
-      - name: Upload unit test report
+      - name: Upload unit test artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unit-test-report
-          path: app/build/reports/tests/testDebugUnitTest/
+          path: |
+            build-test.log
+            app/build/reports/tests/testDebugUnitTest/
           if-no-files-found: ignore
 
       - name: Assemble debug
-        run: ./gradlew :app:assembleDebug --stacktrace --no-daemon
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --stacktrace --info --no-daemon 2>&1 | tee build-assemble.log
+
+      - name: Upload assemble log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: assemble-log
+          path: build-assemble.log
+          if-no-files-found: ignore
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
