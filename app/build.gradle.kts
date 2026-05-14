@@ -50,12 +50,13 @@ android {
                 "proguard-rules.pro",
             )
             val releaseSigning = signingConfigs.getByName("release")
-            signingConfig = if (releaseSigning.storeFile != null) {
-                releaseSigning
-            } else {
-                println("⚠  No release keystore configured; falling back to debug signing.")
-                signingConfigs.getByName("debug")
-            }
+            signingConfig =
+                if (releaseSigning.storeFile != null) {
+                    releaseSigning
+                } else {
+                    println("⚠  No release keystore configured; falling back to debug signing.")
+                    signingConfigs.getByName("debug")
+                }
         }
     }
 
@@ -74,12 +75,13 @@ android {
 
     packaging {
         resources {
-            excludes += setOf(
-                "META-INF/AL2.0",
-                "META-INF/LGPL2.1",
-                "META-INF/LICENSE*",
-                "META-INF/NOTICE*",
-            )
+            excludes +=
+                setOf(
+                    "META-INF/AL2.0",
+                    "META-INF/LGPL2.1",
+                    "META-INF/LICENSE*",
+                    "META-INF/NOTICE*",
+                )
         }
     }
 
