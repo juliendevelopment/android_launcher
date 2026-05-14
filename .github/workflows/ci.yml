@@ -28,71 +28,116 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # TODO(spotless): re-enable once Spotless 6.25.0's ktlint adapter is reading
-      # project .editorconfig the same way the standalone CLI does. Today CI fails
-      # on rules that are explicitly disabled in .editorconfig (verified locally
-      # with the matching ktlint 1.3.1 CLI, exit 0). Tracking as a follow-up so we
-      # can ship the v0.1.0 APK without blocking on lint tooling.
+      # project .editorconfig the same way the standalone CLI does.
       # - name: Spotless check
       #   run: ./gradlew spotlessCheck --stacktrace --no-daemon
 
-      - name: Compile debug Kotlin (verbose)
+      - name: Compile debug Kotlin
+        id: compile
+        continue-on-error: true
         run: |
           set -o pipefail
-          ./gradlew :app:compileDebugKotlin --stacktrace --info --no-daemon 2>&1 | tee build-compile.log
+          ./gradlew :app:compileDebugKotlin --stacktrace --no-daemon 2>&1 | tee build-compile.log
 
-      - name: Upload compile log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-compile-log
-          path: build-compile.log
-          if-no-files-found: ignore
+      - name: Surface compile failure
+        if: steps.compile.outcome == 'failure'
+        run: |
+          {
+            echo "## :x: compileDebugKotlin failed"
+            echo
+            echo '```'
+            # Kotlin compile errors are prefixed with 'e:' (errors) and 'w:' (warnings).
+            # Also keep Gradle FAILURE/Caused-by lines for context.
+            grep -E "^(e:|w:|FAILURE|Caused by|\* What went wrong|\s+> )" build-compile.log | tail -120 || true
+            echo
+            echo '--- tail of full log ---'
+            tail -80 build-compile.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
 
       - name: Android lint
+        id: lint
+        continue-on-error: true
         run: |
           set -o pipefail
-          ./gradlew :app:lintDebug --stacktrace --info --no-daemon 2>&1 | tee build-lint.log
+          ./gradlew :app:lintDebug --stacktrace --no-daemon 2>&1 | tee build-lint.log
 
-      - name: Upload lint artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lint-report
-          path: |
-            build-lint.log
-            app/build/reports/lint-results-debug.html
-            app/build/reports/lint-results-debug.xml
-          if-no-files-found: ignore
+      - name: Surface lint failure
+        if: steps.lint.outcome == 'failure'
+        run: |
+          {
+            echo "## :x: lintDebug failed"
+            echo
+            echo '```'
+            grep -E "^(e:|w:|FAILURE|Caused by|\* What went wrong|\s+> )" build-lint.log | tail -120 || true
+            echo
+            echo '--- tail of full log ---'
+            tail -80 build-lint.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Unit tests
+        id: unit
+        continue-on-error: true
         run: |
           set -o pipefail
-          ./gradlew :app:testDebugUnitTest --stacktrace --info --no-daemon 2>&1 | tee build-test.log
+          ./gradlew :app:testDebugUnitTest --stacktrace --no-daemon 2>&1 | tee build-test.log
 
-      - name: Upload unit test artifacts
+      - name: Surface unit-test failure
+        if: steps.unit.outcome == 'failure'
+        run: |
+          {
+            echo "## :x: testDebugUnitTest failed"
+            echo
+            echo '```'
+            grep -E "^(e:|FAILURE|Caused by|\* What went wrong|\s+> |.*FAILED|.*PASSED)" build-test.log | tail -120 || true
+            echo
+            echo '--- tail of full log ---'
+            tail -120 build-test.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Assemble debug
+        id: assemble
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          ./gradlew :app:assembleDebug --stacktrace --no-daemon 2>&1 | tee build-assemble.log
+
+      - name: Surface assemble failure
+        if: steps.assemble.outcome == 'failure'
+        run: |
+          {
+            echo "## :x: assembleDebug failed"
+            echo
+            echo '```'
+            grep -E "^(e:|w:|FAILURE|Caused by|\* What went wrong|\s+> )" build-assemble.log | tail -120 || true
+            echo
+            echo '--- tail of full log ---'
+            tail -120 build-assemble.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit 1
+
+      - name: Upload build logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: unit-test-report
+          name: build-logs
           path: |
+            build-compile.log
+            build-lint.log
             build-test.log
+            build-assemble.log
+            app/build/reports/lint-results-debug.html
+            app/build/reports/lint-results-debug.xml
             app/build/reports/tests/testDebugUnitTest/
           if-no-files-found: ignore
 
-      - name: Assemble debug
-        run: |
-          set -o pipefail
-          ./gradlew :app:assembleDebug --stacktrace --info --no-daemon 2>&1 | tee build-assemble.log
-
-      - name: Upload assemble log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: assemble-log
-          path: build-assemble.log
-          if-no-files-found: ignore
-
       - name: Upload debug APK
+        if: steps.assemble.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: app-debug
