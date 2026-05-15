@@ -153,8 +153,10 @@ class GridRepository
 
         suspend fun remove(itemId: Long) {
             val item = dao.itemById(itemId) ?: return
-            if (item.type == GridItemType.FOLDER) item.folderId?.let(dao::deleteFolder)
-            if (item.type == GridItemType.WIDGET) item.appWidgetId?.let(dao::deleteWidget)
+            // Cannot pass `dao::deleteFolder` to `let` because it is a suspend function
+            // and let() only accepts non-suspending function references.
+            if (item.type == GridItemType.FOLDER) item.folderId?.let { dao.deleteFolder(it) }
+            if (item.type == GridItemType.WIDGET) item.appWidgetId?.let { dao.deleteWidget(it) }
             dao.deleteItem(item)
         }
     }
