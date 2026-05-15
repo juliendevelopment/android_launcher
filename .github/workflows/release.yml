@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*.*.*'
+    # Alternate trigger so the version can be cut from a sandbox that cannot push
+    # git tags (e.g. CI agents behind a proxy that blocks ref/tags writes).
+    # Push a branch called release/v1.2.3 and this workflow uses '1.2.3' as the
+    # release version, the same as if you had pushed a v1.2.3 tag.
+    branches:
+      - 'release/v*.*.*'
 
 permissions:
   contents: write
@@ -49,13 +55,23 @@ jobs:
         #   KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: ./gradlew :app:assembleRelease --stacktrace --no-daemon
 
-      - name: Rename APK
-        id: rename
+      - name: Resolve release version
+        id: version
         run: |
           set -euo pipefail
-          tag="${GITHUB_REF_NAME}"
+          # When triggered by a tag push, GITHUB_REF_NAME is the tag (e.g. v0.1.0).
+          # When triggered by a release/vX.Y.Z branch push, strip the prefix.
+          name="${GITHUB_REF_NAME#release/}"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Rename APK
+        id: rename
+        env:
+          VERSION: ${{ steps.version.outputs.name }}
+        run: |
+          set -euo pipefail
           src="app/build/outputs/apk/release/app-release.apk"
-          dst="launcher-${tag}.apk"
+          dst="launcher-${VERSION}.apk"
           cp "$src" "$dst"
           echo "asset=$dst" >> "$GITHUB_OUTPUT"
 
@@ -64,5 +80,6 @@ jobs:
         with:
           files: ${{ steps.rename.outputs.asset }}
           generate_release_notes: true
-          name: ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
+          name: ${{ steps.version.outputs.name }}
+          tag_name: ${{ steps.version.outputs.name }}
+          target_commitish: ${{ github.sha }}
